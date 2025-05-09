@@ -60,7 +60,43 @@ export async function POST(req: Request) {
     });
   }
   
-
-  console.log(`🔔 Webhook recibido (Tipo: ${evt.type})`);
-  return NextResponse.json({ received: true }, { status: 200 });
+  if (envenType === 'user.updated') {
+    const currentUser = await db.user.findUnique({
+      where: { 
+        externalUserId: payload.data.id 
+      },
+    });
+    if (!currentUser) {
+      return new Response('User not found', { status: 404 });
+    } 
+    await db.user.update({
+      where: { externalUserId: payload.data.id },
+      data: {
+        username: payload.data.username,
+        imageUrl: payload.data.image_url,
+      },
+    });
+    if (!currentUser) {
+      return new Response('User not found', { status: 404 });
+    } 
+    await db.user.update({
+      where: { externalUserId: payload.data.id },
+      data: {
+        username: payload.data.username,
+        imageUrl: payload.data.image_url,
+      },
+    });
+    }
+    if(envenType === 'user.deleted') {
+      await db.user.delete({
+        where: { 
+          externalUserId: payload.data.id 
+        },
+      });
+    console.log(`🔔 Webhook recibido (Tipo: ${evt.type})`);
+    return NextResponse.json({ received: true }, { status: 200 });
+      
+  }
+  
 }
+  

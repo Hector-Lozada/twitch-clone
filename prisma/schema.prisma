@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output = "./generated"
 }
 
 datasource db {
@@ -18,6 +19,26 @@ model User {
   imageUrl       String
   externalUserId String   @unique
   bio            String?
+
+  following Follow[] @relation("Following")
+  followedBy Follow[] @relation("FollowedBy")
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model Follow{
+  id          String @id @default(uuid())
+  followerId  String
+  followingId String
+
+  follower User @relation(name: "Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation(name: "FollowedBy", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createAt   DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
