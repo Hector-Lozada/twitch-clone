@@ -1,8 +1,8 @@
 import { Webhook } from 'svix';
-import { headers } from 'next/headers'; // ¡Ahora es asíncrona!
+import { headers } from 'next/headers';
 import { type WebhookEvent } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db'; // Asegúrate de que la ruta sea correcta
+import { db } from '@/lib/db';
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SIGNING_SECRET;
@@ -14,8 +14,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // Obtener headers (¡CON AWAIT!)
-  const headerPayload = await headers(); // 👈 Cambio clave
+  const headerPayload = await headers();
   const svixId = headerPayload.get('svix-id');
   const svixTimestamp = headerPayload.get('svix-timestamp');
   const svixSignature = headerPayload.get('svix-signature');
@@ -27,7 +26,6 @@ export async function POST(req: Request) {
     );
   }
 
-  // Resto del código permanece igual...
   const payload = await req.json();
   const body = JSON.stringify(payload);
 
@@ -48,55 +46,81 @@ export async function POST(req: Request) {
     );
   }
 
-  const envenType = evt.type;
+  const eventType = evt.type;
 
-  if (envenType === 'user.created') {
-    await db.user.create({
-      data: {
-        externalUserId: payload.data.id,
-        username: payload.data.username,
-        imageUrl: payload.data.image_url,
-      },
-    });
-  }
-  
-  if (envenType === 'user.updated') {
-    const currentUser = await db.user.findUnique({
-      where: { 
-        externalUserId: payload.data.id 
-      },
-    });
-    if (!currentUser) {
-      return new Response('User not found', { status: 404 });
-    } 
-    await db.user.update({
-      where: { externalUserId: payload.data.id },
-      data: {
-        username: payload.data.username,
-        imageUrl: payload.data.image_url,
-      },
-    });
-    if (!currentUser) {
-      return new Response('User not found', { status: 404 });
-    } 
-    await db.user.update({
-      where: { externalUserId: payload.data.id },
-      data: {
-        username: payload.data.username,
-        imageUrl: payload.data.image_url,
-      },
-    });
+  try {
+    if (eventType === 'user.created') {
+      // Verificar si el usuario ya existe
+      const existingUser = await db.user.findUnique({
+        where: {
+          externalUserId: payload.data.id
+        }
+      });
+    
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'El usuario ya existe' },
+          { status: 409 }
+        );
+      }
+    
+      // Si no existe, crearlo
+      await db.user.create({
+        data: {
+          externalUserId: payload.data.id,
+          username: payload.data.username || `user_${payload.data.id}`, // Valor por defecto si username es null
+          imageUrl: payload.data.image_url,
+          stream: {
+            create: {
+              name: `${payload.data.username || 'Nuevo stream'}'s stream`
+            }
+          }
+        },
+      });
+      return NextResponse.json({ success: true }, { status: 200 });
     }
-    if(envenType === 'user.deleted') {
+
+    if (eventType === 'user.updated') {
+      const currentUser = await db.user.findUnique({
+        where: { 
+          externalUserId: payload.data.id 
+        },
+      });
+
+      if (!currentUser) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+
+      await db.user.update({
+        where: { externalUserId: payload.data.id },
+        data: {
+          username: payload.data.username,
+          imageUrl: payload.data.image_url,
+        },
+      });
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
+
+    if (eventType === 'user.deleted') {
       await db.user.delete({
         where: { 
           externalUserId: payload.data.id 
         },
       });
-    console.log(`🔔 Webhook recibido (Tipo: ${evt.type})`);
-    return NextResponse.json({ received: true }, { status: 200 });
-      
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
+
+    // Si llega aquí y no ha manejado el tipo de evento
+    return NextResponse.json(
+      { error: 'Tipo de evento no manejado' },
+      { status: 400 }
+    );
+
+  } catch (error) {
+    console.error('Error procesando webhook:', error);
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    );
   }
-  
 }
-  

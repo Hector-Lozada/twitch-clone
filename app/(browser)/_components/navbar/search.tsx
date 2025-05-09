@@ -35,7 +35,7 @@ export const Search = () => {
     return (
         <form 
         onSubmit={onSubmit}
-        className=' relative w-full lg:w-[400px] flex items-center'>
+        className=' relative w-full lg:w-[400px] flex items-center '>
             <Input 
             value={value}
             onChange={(e) => setValue(e.target.value)}
@@ -51,8 +51,7 @@ export const Search = () => {
             <Button 
             type='submit'
             size="sm"
-            variant="secondary"
-            className='rounded-l-none rounded-r-md absolute right-0 h-full'
+            className='rounded-l-none rounded-r-md absolute right-0 h-full '
             >
                 <SearchIcon className='h-5 w-5 text-muted-foreground'/>
             </Button>

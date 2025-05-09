@@ -12,7 +12,7 @@ const font = Poppins({
 export const Logo = () => {
     return (
         <div className=" flex flex-col items-center gap-y-4">
-            <div className="bg-white rounded-full p-1">
+            <div className=" rounded-full p-1">
                 <Image
                 src="/unnamed.svg"
                 alt="Logo"
@@ -20,7 +20,7 @@ export const Logo = () => {
                 width="80"/>
             </div>
             <div className={cn("flex flex-col items-center", font.className)}>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-2xl font-bold ">
                     UtelvtDemy
                 </p>
                 <p className="text-sm text-muted-foreground">
