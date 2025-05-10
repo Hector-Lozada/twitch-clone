@@ -13,13 +13,21 @@ const ChatPage = async () => {
     return (
         <div className="p-6">
             <div className="mb-4">
-                <h1 className="text-2xl font-bold">Configuracion del Chat</h1>
+                <h1 className="text-2xl font-bold">⚙️ Configuracion del Chat</h1>
             </div>
             <div className="space-y-4">
                 <ToggleCard 
                 field="isChatEnable"
-                label="Enable Chat"
+                label="Habilitar chat"
                 value={stream.isChatEnable}/>
+                <ToggleCard 
+                field="isChatDelayed"
+                label="Demorar chat"
+                value={stream.isChatDelayed}/>
+                <ToggleCard 
+                field="isChatFollowersOnly"
+                label="Debe seguir al usuario para chatear"
+                value={stream.isChatFollowersOnly}/>
             </div>
         </div>
     );
