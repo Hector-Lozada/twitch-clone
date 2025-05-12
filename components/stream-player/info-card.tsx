@@ -50,7 +50,7 @@ export const InfoCard = ({
                     </div>
                     <div>
                         <h3 className="text-sm text-muted-foreground mb-2">
-                            Thumbnail:
+                            Miniatura:
                         </h3>
                         {thumbnailUrl && (
                             <div className="relative aspect-video rounded-md overflow-hidden w-[200px] border border-white/10">

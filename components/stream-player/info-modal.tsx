@@ -1,121 +1,210 @@
 "use client";
 
-import { useState, useTransition, useRef, ElementRef } from "react";
-
+import { useState, useTransition, useRef, ElementRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-
-
 import { Button } from "@/components/ui/button";
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { updateStream } from "@/actions/stream";
-import { toast } from "sonner";
-
 import { UploadDropzone } from "@/lib/uploadthing";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Trash } from "lucide-react";
 
-interface InfoModalProps{
-    initialName: string;
-    initialThumbnailUrl: string | null;
-};
+interface InfoModalProps {
+  initialName: string;
+  initialThumbnailUrl: string | null;
+}
 
 export const InfoModal = ({
-    initialName,
-    initialThumbnailUrl,
-} : InfoModalProps) => {
-    const router = useRouter();
+  initialName,
+  initialThumbnailUrl,
+}: InfoModalProps) => {
+  const router = useRouter();
+  const closeRef = useRef<ElementRef<"button">>(null);
+  
+  const [isPending, startTransition] = useTransition();
+  const [thumbnailUrl, setThumbnailUrl] = useState(initialThumbnailUrl);
+  const [name, setName] = useState(initialName);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDeletingThumbnail, setIsDeletingThumbnail] = useState(false);
 
-    const closeRef = useRef<ElementRef<"button">>(null);
-    const [isPending, startTransition] = useTransition();
-    const [thumbnailUrl, setThumbnailUrl] = useState(initialThumbnailUrl);
-    const [name, setName] = useState(initialName);
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  }, []);
 
-    const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setName(e.target.value);
-    };
-
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        startTransition(() => {
-            updateStream({name: name})
-            .then(() => {toast.success("Se ha cambiado el nombre del stream correctamente!");
-                closeRef?.current?.click();
-            })
-            .catch(() => toast.error("No se pudo cambiar el nombre del Stream"))
-        })
+  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (name.trim() === "") {
+      toast.error("El nombre del stream no puede estar vacío");
+      return;
     }
 
-    return(
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="link" size="sm" className="ml-auto">
-                    Edit
+    startTransition(async () => {
+      try {
+        await updateStream({ name, thumbnailUrl });
+        toast.success("¡Stream actualizado correctamente!");
+        closeRef.current?.click();
+        router.refresh();
+      } catch (error) {
+        toast.error("No se pudo actualizar el stream");
+        console.error("Update stream error:", error);
+      }
+    });
+  }, [name, thumbnailUrl, router]);
+
+  const handleUploadComplete = useCallback((res: { url: string }[]) => {
+    if (!res?.[0]?.url) {
+      toast.error("No se recibió URL de la miniatura");
+      return;
+    }
+    setThumbnailUrl(res[0].url);
+    setIsUploading(false);
+    toast.success("¡Miniatura subida correctamente!");
+    router.refresh();
+    closeRef.current?.click(); // Esta línea cierra el modal
+  }, [router]);
+
+  const handleUploadError = useCallback((error: Error) => {
+    setIsUploading(false);
+    toast.error("Error al subir la miniatura");
+    console.error("Upload error:", error);
+  }, []);
+
+  const handleUploadStart = useCallback(() => {
+    setIsUploading(true);
+  }, []);
+
+  const removeThumbnail = useCallback(() => {
+    setIsDeletingThumbnail(true);
+    startTransition(async () => {
+      try {
+        await updateStream({ thumbnailUrl: null });
+        setThumbnailUrl(null);
+        toast.success("Imagen eliminada correctamente");
+        router.refresh();
+      } catch (error) {
+        toast.error("Error al eliminar la imagen");
+        console.error("Delete thumbnail error:", error);
+      } finally {
+        setIsDeletingThumbnail(false);
+      }
+    });
+  }, [router]);
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="link" size="sm" className="ml-auto">
+          Editar
+        </Button>
+      </DialogTrigger>
+      
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-center">Editar información del stream</DialogTitle>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="stream-name">Nombre del Stream</Label>
+            <Input
+              id="stream-name"
+              placeholder="Nombre del Stream"
+              onChange={handleNameChange}
+              value={name}
+              disabled={isPending}
+              minLength={3}
+              maxLength={50}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Miniatura</Label>
+            
+            {thumbnailUrl ? (
+              <div className="relative group">
+                <div className="relative aspect-video rounded-xl overflow-hidden border">
+                  <Image
+                    src={thumbnailUrl}
+                    alt="Miniatura del stream"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority={false}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={removeThumbnail}
+                  disabled={isPending || isDeletingThumbnail}
+                >
+                  <Trash className="w-4 h-4" />
+                  {isDeletingThumbnail ? "Eliminando..." : ""}
                 </Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>
-                        Editar informacion del stream
-                    </DialogTitle>
-                </DialogHeader>
-                <form 
-                onSubmit={onSubmit}
-                className="space-y-14">
-                    <div className="space-y-2">
-                        <Label>Name</Label>
-                        <Input 
-                        placeholder="Nombre del Stream"
-                        onChange={onChange}
-                        value={name}
-                        disabled={false}
-                        />
+              </div>
+            ) : (
+              <div className="relative rounded-xl border-2 border-dashed border-muted">
+                <UploadDropzone
+                  endpoint="thumbnailUploader"
+                  appearance={{
+                    label: { color: "#FFFFFF" },
+                    allowedContent: { color: "#FFFFFF" },
+                    uploadIcon: isUploading ? { display: "none" } : undefined,
+                  }}
+                  onClientUploadComplete={handleUploadComplete}
+                  onUploadError={handleUploadError}
+                  onUploadBegin={handleUploadStart}
+                  config={{
+                    mode: "auto",
+                  }}
+                />
+                {isUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                      <p className="text-sm text-muted-foreground">
+                        Subiendo miniatura...
+                      </p>
                     </div>
-                    <div className="space-y-2">
-                        <Label>
-                            Thumbnail
-                        </Label>
-                        <div className="rounded-xl border outline-dashed outline-muted">
-                            <UploadDropzone
-                            endpoint="thumbnailUploader"
-                            appearance={{
-                                label:{
-                                    color : "#FFFFFF"
-                                },
-                                allowedContent: {
-                                    color: "#FFFFFF"
-                                }
-                            }}
-                            onClientUploadComplete={(res) => {
-                                setThumbnailUrl(res?.[0]?.url);
-                                router.refresh();
-                            }}
-                            />
-                        </div>
-                    </div>
-                    <div className="flex justify-between">
-                        <DialogClose ref={closeRef} asChild>
-                            <Button type="button" variant="ghost">
-                                Cancelar
-                            </Button>
-                        </DialogClose>
-                        <Button
-                        type="submit"
-                        disabled={isPending}
-                        >
-                            Guardar
-                        </Button>
-                    </div>
-                </form>
-            </DialogContent>
-        </Dialog>
-    )
-}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-between gap-4 pt-4">
+            <DialogClose ref={closeRef} asChild>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                disabled={isPending || isUploading || isDeletingThumbnail}
+              >
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button
+              type="submit"
+              disabled={isPending || isUploading || isDeletingThumbnail}
+              className="min-w-[100px]"
+            >
+              {isPending ? "Guardando..." : "Guardar"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
