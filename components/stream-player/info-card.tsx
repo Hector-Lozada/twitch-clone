@@ -18,7 +18,14 @@ export const InfoCard = ({
     hostIdentity,
     viewerIdentity,
 }: InfoCardProps) => {
-    return(
+    const isHost = viewerIdentity === `host-${hostIdentity}`;
+    
+    // Si no es el host, no mostrar nada
+    if (!isHost) {
+        return null;
+    }
+
+    return (
         <div className="px-4">
             <div className="rounded-xl bg-background">
                 <div className="flex items-center gap-x-2.5 p-4">
@@ -27,15 +34,16 @@ export const InfoCard = ({
                     </div>
                     <div>
                         <h2 className="text-sm lg:text-lg font-semibold capitalize">
-                            Editar la informacion del stream
+                            Editar la información del stream
                         </h2>
                         <p className="text-muted-foreground text-xs lg:text-sm">
                             Maximiza tus visualizaciones
                         </p>
                     </div>
                     <InfoModal 
-                    initialName={name}
-                    initialThumbnailUrl={thumbnailUrl}
+                        initialName={name}
+                        initialThumbnailUrl={thumbnailUrl}
+                        isHost={isHost}
                     />
                 </div>
                 <Separator />
@@ -55,9 +63,10 @@ export const InfoCard = ({
                         {thumbnailUrl && (
                             <div className="relative aspect-video rounded-md overflow-hidden w-[200px] border border-white/10">
                                 <Image
-                                fill
-                                src={thumbnailUrl}
-                                alt={name}
+                                    fill
+                                    src={thumbnailUrl}
+                                    alt={name}
+                                    className="object-cover"
                                 />
                             </div>
                         )}

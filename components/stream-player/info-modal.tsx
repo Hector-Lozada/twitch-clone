@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { updateStream } from "@/actions/stream";
 import { UploadDropzone } from "@/lib/uploadthing";
 import Image from "next/image";
-import { Trash } from "lucide-react";
+import { Trash, Edit, Loader2, X, Check, ImageIcon } from "lucide-react";
 
 interface InfoModalProps {
   initialName: string;
@@ -49,6 +49,11 @@ export const InfoModal = ({
       return;
     }
 
+    if (name === initialName && thumbnailUrl === initialThumbnailUrl) {
+      closeRef.current?.click();
+      return;
+    }
+
     startTransition(async () => {
       try {
         await updateStream({ name, thumbnailUrl });
@@ -60,7 +65,7 @@ export const InfoModal = ({
         console.error("Update stream error:", error);
       }
     });
-  }, [name, thumbnailUrl, router]);
+  }, [name, thumbnailUrl, initialName, initialThumbnailUrl, router]);
 
   const handleUploadComplete = useCallback((res: { url: string }[]) => {
     if (!res?.[0]?.url) {
@@ -71,7 +76,7 @@ export const InfoModal = ({
     setIsUploading(false);
     toast.success("¡Miniatura subida correctamente!");
     router.refresh();
-    closeRef.current?.click(); // Esta línea cierra el modal
+    closeRef.current?.click();
   }, [router]);
 
   const handleUploadError = useCallback((error: Error) => {
@@ -92,6 +97,7 @@ export const InfoModal = ({
         setThumbnailUrl(null);
         toast.success("Imagen eliminada correctamente");
         router.refresh();
+        closeRef.current?.click();
       } catch (error) {
         toast.error("Error al eliminar la imagen");
         console.error("Delete thumbnail error:", error);
@@ -104,19 +110,25 @@ export const InfoModal = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="link" size="sm" className="ml-auto">
+        <Button variant="link" size="sm" className="ml-auto flex items-center gap-1">
+          <Edit className="w-4 h-4" />
           Editar
         </Button>
       </DialogTrigger>
       
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center">Editar información del stream</DialogTitle>
+          <DialogTitle className="text-center flex items-center justify-center gap-2">
+            <Edit className="w-5 h-5" />
+            Editar información del stream
+          </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="stream-name">Nombre del Stream</Label>
+            <Label htmlFor="stream-name" className="flex items-center gap-1">
+              Nombre del Stream
+            </Label>
             <Input
               id="stream-name"
               placeholder="Nombre del Stream"
@@ -129,7 +141,10 @@ export const InfoModal = ({
           </div>
           
           <div className="space-y-2">
-            <Label>Miniatura</Label>
+            <Label className="flex items-center gap-1">
+              <ImageIcon className="w-4 h-4" />
+              Miniatura
+            </Label>
             
             {thumbnailUrl ? (
               <div className="relative group">
@@ -147,12 +162,14 @@ export const InfoModal = ({
                   type="button"
                   size="sm"
                   variant="destructive"
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
                   onClick={removeThumbnail}
                   disabled={isPending || isDeletingThumbnail}
                 >
                   <Trash className="w-4 h-4" />
-                  {isDeletingThumbnail ? "Eliminando..." : ""}
+                  {isDeletingThumbnail ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : null}
                 </Button>
               </div>
             ) : (
@@ -174,7 +191,7 @@ export const InfoModal = ({
                 {isUploading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
                     <div className="flex flex-col items-center gap-2">
-                      <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
                       <p className="text-sm text-muted-foreground">
                         Subiendo miniatura...
                       </p>
@@ -191,16 +208,29 @@ export const InfoModal = ({
                 type="button" 
                 variant="ghost" 
                 disabled={isPending || isUploading || isDeletingThumbnail}
+                className="flex items-center gap-1"
               >
+                <X className="w-4 h-4" />
                 Cancelar
               </Button>
             </DialogClose>
             <Button
               type="submit"
-              disabled={isPending || isUploading || isDeletingThumbnail}
-              className="min-w-[100px]"
+              disabled={isPending || isUploading || isDeletingThumbnail || 
+                       (name === initialName && thumbnailUrl === initialThumbnailUrl)}
+              className="min-w-[100px] flex items-center gap-1"
             >
-              {isPending ? "Guardando..." : "Guardar"}
+              {isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" />
+                  Guardar
+                </>
+              )}
             </Button>
           </div>
         </form>
