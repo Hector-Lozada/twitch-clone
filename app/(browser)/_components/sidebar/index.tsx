@@ -22,7 +22,7 @@ const following = await getFollowedUsers();
 
 export const SidebarSkeleton = () => {
     return (
-        <aside className="fixed left-0 flex flex-col w-[70px] lg:w-60 h-full bg-background border-r border-[#ffffff] z-50">
+        <aside className="fixed left-0 flex flex-col w-[70px] lg:w-60 h-full bg-background border-r border-[#353535] z-50">
             <ToggleSkeleton />
             <RecommendedSkeleton />
         </aside>

@@ -29,7 +29,7 @@ export const NavItem = ({
         variant="ghost"
         className={cn("w-full h-12", collapsed ? "justify-center" : "justify-start", isActive && "bg-accent")}>
             <Link href={href}>
-                <div className="group flex items-center gap-x-2 rounded-md p-2 text-sm font-medium transition-colorshover:text-black">
+                <div className="group flex items-center gap-x-2 rounded-md p-2 text-sm font-medium transition-colors ">
                     <Icon className={cn("h-4 w-4", collapsed ? "mr-0" : "mr-2")} />
                     {!collapsed &&(
                         <span>

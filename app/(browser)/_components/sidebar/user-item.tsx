@@ -44,7 +44,7 @@ export const UserItem = ({
                     username={username}
                     isLive={isLive}/>
                     {!collapsed && (
-                        <p className="truncate text-black">
+                        <p className="truncate ">
                             {username}
                         </p>
                     )}

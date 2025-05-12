@@ -23,14 +23,14 @@ export const Toggle = () => {
                         onClick={onExpand}
                         variant="ghost"
                         className="h-auto p-2">
-                            <ArrowRightFromLine className="h-4 w-4 text-black"/>
+                            <ArrowRightFromLine className="h-4 w-4 "/>
                         </Button>
                     </Hint>
                 </div>
             )}
             {!collapsed && (
                 <div className="p-3 pl-6 mb-2 hidden lg:flex items-center w-full">
-                    <p className="font-semibold text-black ">
+                    <p className="font-semibold  ">
                         Dashboard
                     </p>
                     <Hint label={label} side="right" asClild>
@@ -38,7 +38,7 @@ export const Toggle = () => {
                         onClick={onCollapse}
                         variant="ghost"
                         className="h-full p-2 ml-auto">
-                            <ArrowLeftFromLine className="h-4 w-4 text-black"/>
+                            <ArrowLeftFromLine className="h-4 w-4 "/>
                         </Button>
                     </Hint>
                 </div>

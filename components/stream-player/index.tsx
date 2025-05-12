@@ -8,7 +8,8 @@ import { Video, VideoSkeleton } from "./video";
 import { cn } from "@/lib/utils";
 import { Chat, ChatSkeleton } from "./chat";
 import { ChatToggle } from "./chat-toggle";
-import { Header } from "./header";
+import { Header, HeaderSkeleton } from "./header";
+import { InfoCard } from "./info-card";
 
 interface StreamPlayerProps {
     user: User & {stream: Stream | null};
@@ -34,7 +35,7 @@ export const StreamPlayer = ({
     }
 
     return (
-        <div className="bg-[#ececec] dark:bg-gray-800"> {/* Fondo gris agregado */}
+        <div className="bg-[#080808]">
             {collapsed && (
                 <div className="hidden lg:block fixed top-[100px] right-2 z-50">
                     <ChatToggle />
@@ -61,6 +62,12 @@ export const StreamPlayer = ({
                     isFollowing={isFollowing}
                     name={stream.name}
                     />
+                    <InfoCard 
+                    hostIdentity={user.id}
+                    viewerIdentity={identity}
+                    name={stream.name}
+                    thumbnailUrl={stream.thumbnailUrl}
+                    />
                 </div>
                 <div className={cn("col-span-1", collapsed && "hidden")}>
                     <Chat
@@ -80,10 +87,11 @@ export const StreamPlayer = ({
 
 export const StreamPlayerSkeleton = () => {
     return (
-        <div className="bg-gray-100 dark:bg-gray-800 h-full"> {/* Fondo gris agregado */}
+        <div className="bg-background">
             <div className="grid grid-cols-1 lg:gap-y-0 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 h-full">
                 <div className="space-y-4 col-span-1 lg:col-span-2 xl:col-span-2 2xl:col-span-5 lg:overflow-y-auto hidden-scrollbar pb-10">
                     <VideoSkeleton />
+                    <HeaderSkeleton />
                 </div>
                 <div className="col-span-1 bg-background">
                     <ChatSkeleton />

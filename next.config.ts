@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
-import { config } from "process";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  webpack: (config) =>{
+  images: {
+    domains: ["utfs.io"], // Añade el dominio de UploadThing aquí
+  },
+  experimental: {
+    // appDir: true, // (Opcional) Solo necesario si usas Next.js < 13.4
+  },
+  webpack: (config) => {
     config.module.rules.push({
       test: /\.msj$/,
       include: /node_modules/,

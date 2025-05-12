@@ -72,7 +72,7 @@ export async function POST(req: Request) {
           imageUrl: payload.data.image_url,
           stream: {
             create: {
-              name: `${payload.data.username || 'Nuevo stream'}'s stream`
+              name: `${payload.data.username}'esta en stream`
             }
           }
         },
