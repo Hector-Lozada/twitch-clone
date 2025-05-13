@@ -43,7 +43,6 @@ export const InfoCard = ({
                     <InfoModal 
                         initialName={name}
                         initialThumbnailUrl={thumbnailUrl}
-                        isHost={isHost}
                     />
                 </div>
                 <Separator />
