@@ -9,13 +9,14 @@ interface CreatorLayoutProps {
   children: React.ReactNode;
 }
 
-const CreatorLayout = async ({ params, children }: CreatorLayoutProps) => {
-  try {
-    // Destructure params directly (no await needed)
-    const { username } = params;
+const CreatorLayout = async ({
+  params,
+  children,
+}: CreatorLayoutProps) => {
+  const awaitedParams = await params; // por si acaso
+  const { username } = awaitedParams;
 
-    // Get user asynchronously
-    const self = await getSelfByUsername(username);
+  const self = await getSelfByUsername(username);
 
     if (!self) {
       redirect("/");
@@ -30,10 +31,6 @@ const CreatorLayout = async ({ params, children }: CreatorLayoutProps) => {
         </div>
       </>
     );
-  } catch (error) {
-    console.error("Error in CreatorLayout:", error);
-    redirect("/");
-  }
-};
+  } 
 
 export default CreatorLayout;

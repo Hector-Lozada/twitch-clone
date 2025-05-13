@@ -6,7 +6,12 @@ import { Stream, User } from "@prisma/client";
 import Link from "next/link";
 
 interface ResultCardProps{
-    data: Stream & { user: User};
+    data:{
+        user: User,
+        isLive: boolean,
+        name: string;
+        thumbnailUrl: string | null;
+    };
 };
 
 export const ResultCard = ({
@@ -21,6 +26,7 @@ export const ResultCard = ({
                 isLive={data.isLive}
                 username={data.user.username}
                 />
+                
                 <div className="flex gap-x-3">
                     <UserAvatar
                     username={data.user.username}

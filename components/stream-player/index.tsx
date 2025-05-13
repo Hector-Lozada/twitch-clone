@@ -12,12 +12,28 @@ import { Header, HeaderSkeleton } from "./header";
 import { InfoCard } from "./info-card";
 import { AboutCard } from "./about-card";
 
+type CustomStream = {
+    id: string;
+    isChatEnable: boolean;
+    isChatDelayed: boolean;
+    isChatFollowersOnly: boolean;
+    isLive: boolean;
+    thumbnailUrl: string | null;
+    name: string;
+};
+
+type CustomUser = {
+    id: string;
+    username: string;
+    bio: string | null;
+    stream: CustomStream | null;
+    imageUrl: string;
+    _count: {followedBy: number}
+};
+
 interface StreamPlayerProps {
-    user: User & {
-        stream: Stream | null,
-        _count: {followedBy: number}
-    };
-    stream: Stream;
+    user: CustomUser;
+    stream: CustomStream;
     isFollowing: boolean;
 }
 
@@ -82,7 +98,7 @@ export const StreamPlayer = ({
                     hostName={user.username}
                     hostIdentity={user.id}
                     viewerIdentity={identity}
-                    bio={user.bio}
+                    bio={user.bio || ""}
                     followedByCount = {user._count.followedBy}
                     />
                 </div>

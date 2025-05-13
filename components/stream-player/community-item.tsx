@@ -11,9 +11,9 @@ import { Button } from "../ui/button";
 
 interface CommunityItemProps {
     hostName: string;
-    viewerName:string;
+    viewerName: string;
     participantName?: string;
-    participantIdentity:string;
+    participantIdentity: string;
 }
 
 export const CommunityItem = ({
@@ -21,38 +21,44 @@ export const CommunityItem = ({
     viewerName,
     participantName,
     participantIdentity,
-}:CommunityItemProps) => {
-    const[isPending, startTransition] = useTransition();
+}: CommunityItemProps) => {
+    const [isPending, startTransition] = useTransition();
 
     const color = stringToColor(participantName || "");
     const isSelf = participantName === viewerName;
     const isHost = viewerName === hostName;
 
-    const handleBlock =() => {
-        if(!participantName || isSelf || !isHost) return;
+    const handleBlock = () => {
+        if (!participantName || isSelf || !isHost) return;
 
-        startTransition(() => {
-            onBlock(participantIdentity)
-            .then(() => toast.success(`${participantName} bloqueado`))
-            .catch(() => toast.error("Error al bloquear"));
+        startTransition(async () => {
+            try {
+                await onBlock(participantIdentity);
+                toast.success(`${participantName} ha sido bloqueado`);
+            } catch (error) {
+                console.error("Error al bloquear:", error);
+                toast.error(`No se pudo bloquear a ${participantName}`);
+            }
         });
     }
 
-    return(
-        <div className={cn("group flex items-center justify-between w-full p-2 rounded-md text-sm hover:bg-gray-200",
+    return (
+        <div className={cn(
+            "group flex items-center justify-between w-full p-2 rounded-md text-sm hover:bg-gray-200",
             isPending && "opacity-50 pointer-events-none"
         )}>
-            <p style={{color: color}}>
+            <p style={{ color: color }}>
                 {participantName}
             </p>
             
-            {isHost && !isSelf &&( 
-                <Hint label="Block">
+            {isHost && !isSelf && ( 
+                <Hint label={`Bloquear a ${participantName}`}>
                     <Button
-                    variant="ghost"
-                    disabled={isPending}
-                     onClick={handleBlock}
-                     className="h-auto w-auto p-1 opacity-0 group-hover:opacity-100 transition">
+                        variant="ghost"
+                        disabled={isPending}
+                        onClick={handleBlock}
+                        className="h-auto w-auto p-1 opacity-0 group-hover:opacity-100 transition"
+                    >
                         <MinusCircle className="h-4 w-4 text-muted-foreground"/>
                     </Button>
                 </Hint>

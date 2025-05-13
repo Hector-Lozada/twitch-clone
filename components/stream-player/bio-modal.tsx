@@ -27,22 +27,7 @@ export const BioModal = ({ initialValue, isHost = false }: BioModalProps) => {
   const [isPending, startTransition] = useTransition();
   const [value, setValue] = useState(initialValue);
 
-  // Si no hay biografía y no es host, no mostrar nada
-  if (!initialValue && !isHost) {
-    return null;
-  }
 
-  // Vista de solo lectura para no hosts
-  if (!isHost) {
-    return (
-      <div className="mt-4">
-        <h3 className="text-lg font-semibold mb-2">Biografía</h3>
-        <p className="text-sm text-gray-600">
-          {initialValue || "Este usuario no ha agregado una biografía aún."}
-        </p>
-      </div>
-    );
-  }
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,9 +51,6 @@ export const BioModal = ({ initialValue, isHost = false }: BioModalProps) => {
   };
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold">Biografía</h3>
         <Dialog>
           <DialogTrigger asChild>
             <Button 
@@ -131,11 +113,5 @@ export const BioModal = ({ initialValue, isHost = false }: BioModalProps) => {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
-      
-      <p className="text-sm text-gray-600">
-        {initialValue || "Aún no has agregado una biografía."}
-      </p>
-    </div>
   );
 };
