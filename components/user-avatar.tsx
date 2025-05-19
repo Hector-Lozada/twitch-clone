@@ -40,8 +40,8 @@ export const UserAvatar = ({
         <div className='relative'>
             <Avatar 
             className={cn(isLive && "ring-2 ring-rose-500 border border-background", avatarSizes({size}))}>
-                <AvatarImage src={imageUrl} className='object-cover'/>
-                <AvatarFallback className='hover:text-black text-black'>
+                <AvatarImage src={imageUrl} className='object-cover '/>
+                <AvatarFallback className=''>
                     {username[0]}
                     {username[username.length - 1]}
                 </AvatarFallback>
