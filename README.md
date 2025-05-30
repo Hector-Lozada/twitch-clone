@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://nextjs.org/static/favicon/favicon-32x32.png" height="48" alt="Next.js Logo" />
+  <img src="[https://nextjs.org/static/favicon/favicon-32x32.png](https://www.svgrepo.com/show/354113/nextjs-icon.svg)" height="48" alt="Next.js Logo" />
 </p>
 
 <h1 align="center">Twitch Clone – Next.js 15, LiveKit, UploadThing, Prisma & MySQL</h1>
